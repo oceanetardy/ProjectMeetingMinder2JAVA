@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/rooms")
+@Tag(name = "Room Management", description = "Gestion des salles dans l'application")
 public class RoomController {
 
     private final RoomService roomService;
@@ -25,46 +26,35 @@ public class RoomController {
         this.roomService = roomService;
     }
 
-    @Operation(summary = "Obtenir toutes les salles", description = "Retourne une liste paginée de toutes les salles")
-    @ApiResponse(responseCode = "200", description = "Liste des salles récupérée avec succès",
-            content = { @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Page.class)) })
-    @GetMapping
-    public Page<Room> getAllRooms(Pageable pageable) {
-        return roomService.findAll(pageable);
-    }
-
     @Operation(summary = "Obtenir une salle par son identifiant", description = "Retourne une salle en fonction de son ID")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Salle trouvée",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Room.class)) }),
-            @ApiResponse(responseCode = "404", description = "Salle non trouvée",
-                    content = @Content)
-    })
+    @ApiResponse(responseCode = "200", description = "Salle trouvée",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Room.class)))
     @GetMapping("/{id}")
     public ResponseEntity<Room> getRoomById(@PathVariable Long id) {
         Optional<Room> room = roomService.findById(id);
         return room.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Obtenir toutes les salles", description = "Retourne une liste paginée de toutes les salles")
+    @ApiResponse(responseCode = "200", description = "Liste des salles récupérée avec succès",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    @GetMapping
+    public Page<Room> getAllRooms(Pageable pageable) {
+        return roomService.findAll(pageable);
+    }
+
     @Operation(summary = "Créer une nouvelle salle", description = "Crée une nouvelle salle et retourne la salle créée")
     @ApiResponse(responseCode = "201", description = "Salle créée avec succès",
-            content = { @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Room.class)) })
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Room.class)))
     @PostMapping
-    public Room createRoom(@Valid @RequestBody Room room) {
-        return roomService.save(room);
+    public ResponseEntity<Room> createRoom(@Valid @RequestBody Room room) {
+        Room createdRoom = roomService.save(room);
+        return ResponseEntity.status(201).body(createdRoom);
     }
 
     @Operation(summary = "Mettre à jour une salle", description = "Met à jour une salle existante et retourne la salle mise à jour")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Salle mise à jour avec succès",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Room.class)) }),
-            @ApiResponse(responseCode = "404", description = "Salle non trouvée",
-                    content = @Content)
-    })
+    @ApiResponse(responseCode = "200", description = "Salle mise à jour avec succès",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Room.class)))
     @PutMapping("/{id}")
     public ResponseEntity<Room> updateRoom(@PathVariable Long id, @Valid @RequestBody Room roomDetails) {
         Optional<Room> room = roomService.findById(id);
@@ -80,11 +70,7 @@ public class RoomController {
     }
 
     @Operation(summary = "Supprimer une salle par son identifiant", description = "Supprime une salle en fonction de son ID")
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Salle supprimée avec succès"),
-            @ApiResponse(responseCode = "404", description = "Salle non trouvée",
-                    content = @Content)
-    })
+    @ApiResponse(responseCode = "204", description = "Salle supprimée avec succès")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoomById(@PathVariable Long id) {
         if (roomService.findById(id).isPresent()) {

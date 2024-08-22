@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reservations")
+@Tag(name = "Reservation Management", description = "Gestion des reservations dans l'application")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -27,20 +29,10 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @Operation(summary = "Obtenir toutes les réservations", description = "Retourne une liste paginée de toutes les réservations")
-    @ApiResponse(responseCode = "200", description = "Liste des réservations récupérée avec succès",
-            content = { @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Page.class)) })
-    @GetMapping
-    public Page<Reservation> getAllReservations(Pageable pageable) {
-        return reservationService.findAll(pageable);
-    }
-
     @Operation(summary = "Obtenir une réservation par son identifiant", description = "Retourne une réservation en fonction de son ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Réservation trouvée",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Reservation.class)) }),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reservation.class))),
             @ApiResponse(responseCode = "404", description = "Réservation non trouvée",
                     content = @Content)
     })
@@ -50,10 +42,18 @@ public class ReservationController {
         return reservation.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Obtenir toutes les réservations", description = "Retourne une liste paginée de toutes les réservations")
+    @ApiResponse(responseCode = "200", description = "Liste des réservations récupérée avec succès",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    @GetMapping
+    public Page<Reservation> getAllReservations(Pageable pageable) {
+        return reservationService.findAll(pageable);
+    }
+
+
     @Operation(summary = "Créer une nouvelle réservation", description = "Crée une nouvelle réservation et retourne la réservation créée")
     @ApiResponse(responseCode = "201", description = "Réservation créée avec succès",
-            content = { @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Reservation.class)) })
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reservation.class)))
     @PostMapping
     public ResponseEntity<Reservation> createReservation(@Valid @RequestBody Reservation reservation) {
         return ResponseEntity.status(201).body(reservationService.save(reservation));
@@ -62,8 +62,7 @@ public class ReservationController {
     @Operation(summary = "Mettre à jour une réservation", description = "Met à jour une réservation existante et retourne la réservation mise à jour")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Réservation mise à jour avec succès",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Reservation.class)) }),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reservation.class))),
             @ApiResponse(responseCode = "404", description = "Réservation non trouvée",
                     content = @Content)
     })

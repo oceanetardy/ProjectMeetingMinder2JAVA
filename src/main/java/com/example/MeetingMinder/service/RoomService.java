@@ -2,7 +2,6 @@ package com.example.MeetingMinder.service;
 
 import com.example.MeetingMinder.model.Room;
 import com.example.MeetingMinder.repository.RoomRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

@@ -23,18 +23,6 @@ public class UserService {
         return userRepository.findAll(pageable);
     }
 
-    public Page<User> findByName(String name, Pageable pageable) {
-        return userRepository.findByNameContaining(name, pageable);
-    }
-
-    public Page<User> findByRoleName(String roleName, Pageable pageable) {
-        return userRepository.findByRole_Name(roleName, pageable);
-    }
-
-    public Page<User> findByNameAndRoleName(String name, String roleName, Pageable pageable) {
-        return userRepository.findByNameContainingAndRole_Name(name, roleName, pageable);
-    }
-
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }

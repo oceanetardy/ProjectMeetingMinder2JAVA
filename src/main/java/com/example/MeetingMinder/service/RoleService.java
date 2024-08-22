@@ -26,10 +26,6 @@ public class RoleService {
         return roleRepository.findAll(pageable);
     }
 
-    public Page<Role> findByName(String name, Pageable pageable) {
-        return roleRepository.findByNameContaining(name, pageable);
-    }
-
     public Optional<Role> findById(Long id) {
         return roleRepository.findById(id);
     }
