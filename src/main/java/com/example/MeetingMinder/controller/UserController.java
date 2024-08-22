@@ -32,8 +32,19 @@ public class UserController {
             content = { @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Page.class)) })
     @GetMapping
-    public Page<User> getAllUsers(Pageable pageable) {
-        return userService.findAll(pageable);
+    public Page<User> getAllUsers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String roleName,
+            Pageable pageable) {
+        if (name != null && roleName != null) {
+            return userService.findByNameAndRoleName(name, roleName, pageable);
+        } else if (name != null) {
+            return userService.findByName(name, pageable);
+        } else if (roleName != null) {
+            return userService.findByRoleName(roleName, pageable);
+        } else {
+            return userService.findAll(pageable);
+        }
     }
 
     @Operation(summary = "Obtenir un utilisateur par son identifiant", description = "Retourne un utilisateur en fonction de son ID")
