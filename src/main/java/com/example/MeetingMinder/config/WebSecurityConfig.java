@@ -4,7 +4,6 @@
 //import org.springframework.context.annotation.Configuration;
 //import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 //import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 //import org.springframework.security.web.SecurityFilterChain;
 //
@@ -21,16 +20,21 @@
 //    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 //        http
 //                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-//                        .requestMatchers("/login", "/resources/**", "/css/**", "/js/**", "/images/**").permitAll()  // Autoriser l'accès à la page de login et aux ressources statiques
-//                        .anyRequest().authenticated()
+//                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/roles/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/rooms/**", "/api/reservations/**").authenticated()
+//                        .anyRequest().permitAll()
 //                )
-//                .formLogin(formLogin -> formLogin
-//                        .loginPage("/meeting-minder/login")  // Assurez-vous que le chemin de la page de login est correct
+//                .formLogin(form -> form
+//                        .loginPage("/login")
 //                        .permitAll()
 //                )
-//                .logout(LogoutConfigurer::permitAll);
+//                .logout(logout -> logout
+//                        .logoutUrl("/logout")
+//                        .logoutSuccessUrl("/login?logout")
+//                        .permitAll()
+//                );
 //
 //        return http.build();
 //    }
-//
 //}

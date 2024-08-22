@@ -27,23 +27,25 @@ public class RoleController {
         this.roleService = roleService;
     }
 
-    @Operation(summary = "Obtenir tous les rôles", description = "Retourne une liste paginée de tous les rôles")
+    @Operation(summary = "Obtenir tous les rôles", description = "Retourne une liste paginée de tous les rôles, avec possibilité de filtrer par nom")
     @ApiResponse(responseCode = "200", description = "Liste des rôles récupérée avec succès",
             content = { @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Page.class)) })
     @GetMapping
-    public Page<Role> getAllRoles(Pageable pageable) {
-        return roleService.findAll(pageable);
+    public Page<Role> getAllRoles(
+            @RequestParam(required = false) String name,
+            Pageable pageable) {
+        if (name != null) {
+            return roleService.findByName(name, pageable);
+        } else {
+            return roleService.findAll(pageable);
+        }
     }
 
     @Operation(summary = "Obtenir un rôle par son identifiant", description = "Retourne un rôle en fonction de son ID")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Rôle trouvé",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Role.class)) }),
-            @ApiResponse(responseCode = "404", description = "Rôle non trouvé",
-                    content = @Content)
-    })
+    @ApiResponse(responseCode = "200", description = "Rôle trouvé",
+            content = { @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Role.class)) })
     @GetMapping("/{id}")
     public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
         Optional<Role> role = roleService.findById(id);

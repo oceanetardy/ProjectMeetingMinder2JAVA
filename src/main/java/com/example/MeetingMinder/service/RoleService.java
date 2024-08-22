@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,12 +22,12 @@ public class RoleService {
         this.roleRepository = roleRepository;
     }
 
-    public List<Role> findAll() {
-        return roleRepository.findAll();
-    }
-
     public Page<Role> findAll(Pageable pageable) {
         return roleRepository.findAll(pageable);
+    }
+
+    public Page<Role> findByName(String name, Pageable pageable) {
+        return roleRepository.findByNameContaining(name, pageable);
     }
 
     public Optional<Role> findById(Long id) {
