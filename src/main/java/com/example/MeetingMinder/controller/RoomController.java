@@ -3,22 +3,27 @@ package com.example.MeetingMinder.controller;
 import com.example.MeetingMinder.model.Room;
 import com.example.MeetingMinder.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomController {
 
-    @Autowired
-    private RoomService roomService;
+    private final RoomService roomService;
+
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
+    }
 
     @GetMapping
-    public List<Room> getAllRooms() {
-        return roomService.findAll();
+    public Page<Room> getAllRooms(Pageable pageable) {
+        return roomService.findAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -28,12 +33,12 @@ public class RoomController {
     }
 
     @PostMapping
-    public Room createRoom(@RequestBody Room room) {
+    public Room createRoom(@Valid @RequestBody Room room) {
         return roomService.save(room);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Room> updateRoom(@PathVariable Long id, @RequestBody Room roomDetails) {
+    public ResponseEntity<Room> updateRoom(@PathVariable Long id, @Valid @RequestBody Room roomDetails) {
         Optional<Room> room = roomService.findById(id);
         if (room.isPresent()) {
             Room updatedRoom = room.get();

@@ -1,6 +1,8 @@
 package com.example.MeetingMinder.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "rooms")
@@ -9,13 +11,15 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Le nom de la salle est obligatoire")
     @Column(unique = true, nullable = false)
     private String name;
 
-    @Column(nullable = true)
+    @Min(value = 1, message = "La capacité doit être d'au moins 1 personne")
+    @Column()
     private Integer capacity;
 
-    @Column(nullable = true)
+    @Column()
     private String description;
 
     // Getters et Setters

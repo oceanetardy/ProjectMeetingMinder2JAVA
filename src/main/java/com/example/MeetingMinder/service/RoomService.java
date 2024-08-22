@@ -3,19 +3,23 @@ package com.example.MeetingMinder.service;
 import com.example.MeetingMinder.model.Room;
 import com.example.MeetingMinder.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class RoomService {
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
-    public List<Room> findAll() {
-        return roomRepository.findAll();
+    public RoomService(RoomRepository roomRepository) {
+        this.roomRepository = roomRepository;
+    }
+
+    public Page<Room> findAll(Pageable pageable) {
+        return roomRepository.findAll(pageable);
     }
 
     public Optional<Room> findById(Long id) {
