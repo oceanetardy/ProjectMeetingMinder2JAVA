@@ -1,6 +1,8 @@
 package com.example.MeetingMinder.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -9,9 +11,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Le nom d'utilisateur est obligatoire")
     @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "Le mot de passe est obligatoire")
+    @Size(min = 6, message = "Le mot de passe doit comporter au moins 6 caractères")
     @Column(nullable = false)
     private String password;
 

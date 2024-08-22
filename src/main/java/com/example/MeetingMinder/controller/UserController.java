@@ -3,22 +3,28 @@ package com.example.MeetingMinder.controller;
 import com.example.MeetingMinder.model.User;
 import com.example.MeetingMinder.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.findAll();
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userService.findAll(pageable);
     }
 
     @GetMapping("/{id}")
@@ -28,12 +34,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         return userService.save(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
         Optional<User> user = userService.findById(id);
         if (user.isPresent()) {
             User updatedUser = user.get();

@@ -3,23 +3,24 @@ package com.example.MeetingMinder.service;
 import com.example.MeetingMinder.model.User;
 import com.example.MeetingMinder.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService {
 
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-//    @Autowired
-//    private BCryptPasswordEncoder passwordEncoder;
-
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public Page<User> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     public Optional<User> findById(Long id) {
@@ -27,7 +28,7 @@ public class UserService {
     }
 
     public User save(User user) {
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Supprimez l'encodage des mots de passe si vous ne souhaitez pas les encoder
         return userRepository.save(user);
     }
 
