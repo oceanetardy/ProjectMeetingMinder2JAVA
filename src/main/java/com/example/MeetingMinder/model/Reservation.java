@@ -1,6 +1,8 @@
 package com.example.MeetingMinder.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,9 +13,13 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "La date de début est obligatoire")
+    @Future(message = "La date de début doit être dans le futur")
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
+    @NotNull(message = "La date de fin est obligatoire")
+    @Future(message = "La date de fin doit être dans le futur")
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
@@ -33,6 +39,17 @@ public class Reservation {
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     // Getters and Setters
     public Long getId() {
