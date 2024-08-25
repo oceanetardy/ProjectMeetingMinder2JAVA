@@ -4,6 +4,8 @@ import com.example.MeetingMinder.model.Reservation;
 import com.example.MeetingMinder.model.Room;
 import com.example.MeetingMinder.model.User;
 import com.example.MeetingMinder.service.ReservationService;
+import com.example.MeetingMinder.service.RoomService;
+import com.example.MeetingMinder.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,10 +36,19 @@ public class ReservationController {
     private static final Logger logger = LoggerFactory.getLogger(ReservationController.class);
 
     private final ReservationService reservationService;
+    private final RoomService roomService;
+    private final UserService userService;
 
     @Autowired
-    public ReservationController(ReservationService reservationService) {
+    public ReservationController(ReservationService reservationService, RoomService roomService, UserService userService) {
         this.reservationService = reservationService;
+        this.roomService = roomService;
+        this.userService = userService;
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @Operation(summary = "Obtenir une réservation par ID", description = "Retourne une réservation en fonction de son ID")
@@ -140,19 +152,33 @@ public class ReservationController {
             logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
             switch (key) {
                 case "startTime":
-                    reservation.setStartTime((LocalDateTime) value);
+                    reservation.setStartTime(LocalDateTime.parse((String) value));
                     break;
                 case "endTime":
-                    reservation.setEndTime((LocalDateTime) value);
+                    reservation.setEndTime(LocalDateTime.parse((String) value));
                     break;
                 case "description":
                     reservation.setDescription((String) value);
                     break;
                 case "user":
-                    reservation.setUser((User) value);
+                    if (value instanceof Map<?, ?> userMap) {
+                        Object userIdObj = userMap.get("id");
+                        if (userIdObj instanceof Number) {
+                            Long userId = ((Number) userIdObj).longValue();
+                            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                            reservation.setUser(user);
+                        }
+                    }
                     break;
                 case "room":
-                    reservation.setRoom((Room) value);
+                    if (value instanceof Map<?, ?> roomMap) {
+                        Object roomIdObj = roomMap.get("id");
+                        if (roomIdObj instanceof Number) {
+                            Long roomId = ((Number) roomIdObj).longValue();
+                            Room room = roomService.findById(roomId).orElseThrow(() -> new RuntimeException("Salle non trouvée"));
+                            reservation.setRoom(room);
+                        }
+                    }
                     break;
             }
         });
@@ -161,6 +187,7 @@ public class ReservationController {
         logger.info("Mise à jour partielle réussie pour la réservation avec ID: {}", updatedReservation.getId());
         return ResponseEntity.ok(updatedReservation);
     }
+
 
     @Operation(summary = "Supprimer une réservation par ID", description = "Supprime une réservation en fonction de son ID")
     @ApiResponses(value = {
