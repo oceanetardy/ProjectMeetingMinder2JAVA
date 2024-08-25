@@ -56,4 +56,10 @@ public class RoleService {
         logger.info("Suppression de tous les rôles");
         roleRepository.deleteAll();
     }
+
+    // Vérifie si un rôle avec un nom donné existe déjà
+    public boolean existsByName(String name) {
+        logger.info("Vérification de l'existence du rôle avec nom: {}", name);
+        return roleRepository.existsByName(name);
+    }
 }

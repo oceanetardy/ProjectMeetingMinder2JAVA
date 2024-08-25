@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -74,7 +75,8 @@ public class RoleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Rôle créé avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Role.class))),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom du rôle existe déjà", content = @Content)
     })
     @PostMapping
     public ResponseEntity<Role> createRole(
@@ -82,6 +84,10 @@ public class RoleController {
             @Valid @RequestBody Role role) {
         logger.info("Requête pour créer un nouveau rôle avec nom: {}", role.getName());
         try {
+            if (roleService.existsByName(role.getName())) {
+                logger.warn("Le nom du rôle '{}' existe déjà", role.getName());
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
             Role savedRole = roleService.save(role);
             logger.info("Rôle créé avec succès: {}", savedRole.getName());
             return ResponseEntity.status(HttpStatus.CREATED).body(savedRole);
@@ -97,7 +103,8 @@ public class RoleController {
             @ApiResponse(responseCode = "200", description = "Rôle mis à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Role.class))),
             @ApiResponse(responseCode = "404", description = "Rôle non trouvé", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom du rôle existe déjà", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<Role> updateRole(
@@ -108,6 +115,10 @@ public class RoleController {
         logger.info("Requête pour mettre à jour le rôle avec ID: {}", id);
         Optional<Role> role = roleService.findById(id);
         if (role.isPresent()) {
+            if (roleService.existsByName(roleDetails.getName()) && !role.get().getName().equals(roleDetails.getName())) {
+                logger.warn("Le nom du rôle '{}' existe déjà", roleDetails.getName());
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
             Role updatedRole = role.get();
             updatedRole.setName(roleDetails.getName());
             Role savedRole = roleService.save(updatedRole);
@@ -125,7 +136,8 @@ public class RoleController {
             @ApiResponse(responseCode = "200", description = "Rôle mis à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Role.class))),
             @ApiResponse(responseCode = "404", description = "Rôle non trouvé", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom du rôle existe déjà", content = @Content)
     })
     @PatchMapping("/{id}")
     public ResponseEntity<Role> partialUpdateRole(
@@ -146,7 +158,12 @@ public class RoleController {
             logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
             switch (key) {
                 case "name":
-                    role.setName((String) value);
+                    String newName = (String) value;
+                    if (roleService.existsByName(newName) && !role.getName().equals(newName)) {
+                        logger.warn("Le nom du rôle '{}' existe déjà", newName);
+                        throw new RuntimeException("Le nom du rôle existe déjà");
+                    }
+                    role.setName(newName);
                     break;
             }
         });
