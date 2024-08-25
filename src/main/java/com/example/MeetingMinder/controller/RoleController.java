@@ -153,17 +153,20 @@ public class RoleController {
         }
 
         Role role = roleOptional.get();
+        
+        if (updates.containsKey("name")) {
+            String newName = (String) updates.get("name");
+            if (roleService.existsByName(newName) && !role.getName().equals(newName)) {
+                logger.warn("Le nom du rôle '{}' existe déjà", newName);
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+        }
 
         updates.forEach((key, value) -> {
             logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
             switch (key) {
                 case "name":
-                    String newName = (String) value;
-                    if (roleService.existsByName(newName) && !role.getName().equals(newName)) {
-                        logger.warn("Le nom du rôle '{}' existe déjà", newName);
-                        throw new RuntimeException("Le nom du rôle existe déjà");
-                    }
-                    role.setName(newName);
+                    role.setName((String) value);
                     break;
             }
         });
@@ -172,6 +175,7 @@ public class RoleController {
         logger.info("Mise à jour partielle réussie pour le rôle: {}", updatedRole.getName());
         return ResponseEntity.ok(updatedRole);
     }
+
 
     @Operation(summary = "Supprimer un rôle par ID",
             description = "Supprime un rôle spécifique en utilisant son identifiant unique.")

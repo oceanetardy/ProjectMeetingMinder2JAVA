@@ -96,7 +96,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
-    
+
     @Operation(summary = "Mettre à jour un utilisateur par ID",
             description = "Met à jour un utilisateur existant avec les nouvelles informations fournies")
     @ApiResponses(value = {
