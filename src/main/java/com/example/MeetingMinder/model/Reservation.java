@@ -3,6 +3,7 @@ package com.example.MeetingMinder.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,33 +12,39 @@ public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identifiant unique de la réservation", example = "1")
     private Long id;
 
     @NotNull(message = "La date de début est obligatoire")
-    @Future(message = "La date de début doit être dans le futur")
+    @Schema(description = "Date et heure de début de la réservation", example = "2024-08-25T10:00:00")
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
     @NotNull(message = "La date de fin est obligatoire")
-    @Future(message = "La date de fin doit être dans le futur")
+    @Schema(description = "Date et heure de fin de la réservation", example = "2024-08-25T12:00:00")
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @Schema(description = "Description de la réservation", example = "Réunion de projet")
     @Column(nullable = true)
     private String description;
 
+    @Schema(description = "Date et heure de création de la réservation", example = "2024-08-01T08:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
+    @Schema(description = "Date et heure de la dernière mise à jour de la réservation", example = "2024-08-01T09:00:00", accessMode = Schema.AccessMode.READ_ONLY)
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @Schema(description = "Utilisateur ayant créé la réservation", implementation = User.class)
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
+    @Schema(description = "Salle réservée", implementation = Room.class)
     private Room room;
 
     @PrePersist
