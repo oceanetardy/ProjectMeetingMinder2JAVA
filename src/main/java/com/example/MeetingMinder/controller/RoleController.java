@@ -153,7 +153,7 @@ public class RoleController {
         }
 
         Role role = roleOptional.get();
-        
+
         if (updates.containsKey("name")) {
             String newName = (String) updates.get("name");
             if (roleService.existsByName(newName) && !role.getName().equals(newName)) {
