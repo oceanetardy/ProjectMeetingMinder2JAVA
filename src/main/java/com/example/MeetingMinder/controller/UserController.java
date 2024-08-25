@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,9 +79,14 @@ public class UserController {
             @Parameter(description = "Détails de l'utilisateur à créer", required = true)
             @Valid @RequestBody User user) {
         logger.info("Requête pour créer un nouvel utilisateur avec nom: {}", user.getName());
-        User createdUser = userService.save(user);
-        logger.info("Utilisateur créé avec succès: {}", createdUser.getName());
-        return ResponseEntity.status(201).body(createdUser);
+        try {
+            User createdUser = userService.save(user);
+            logger.info("Utilisateur créé avec succès: {}", createdUser.getName());
+            return ResponseEntity.status(201).body(createdUser);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la création du rôle: {}", user.getName(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @Operation(summary = "Mettre à jour un utilisateur par ID", description = "Met à jour un utilisateur existant avec les nouvelles informations fournies")
