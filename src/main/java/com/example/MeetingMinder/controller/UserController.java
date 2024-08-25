@@ -87,7 +87,7 @@ public class UserController {
             logger.info("Utilisateur créé avec succès: {}", createdUser.getName());
             return ResponseEntity.status(201).body(createdUser);
         } catch (Exception e) {
-            logger.error("Erreur lors de la création du rôle: {}", user.getName(), e);
+            logger.error("Erreur lors de la création de l'utilisateur: {}", user.getName(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
