@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -117,6 +117,43 @@ public class RoleController {
             logger.warn("Rôle avec ID: {} non trouvé pour mise à jour", id);
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @Operation(summary = "Mettre à jour partiellement un rôle par ID",
+            description = "Met à jour partiellement un rôle existant avec les informations fournies.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Rôle mis à jour avec succès",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Role.class))),
+            @ApiResponse(responseCode = "404", description = "Rôle non trouvé", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+    })
+    @PatchMapping("/{id}")
+    public ResponseEntity<Role> partialUpdateRole(
+            @Parameter(description = "Identifiant unique du rôle à mettre à jour", example = "1") @PathVariable Long id,
+            @Parameter(description = "Informations à mettre à jour", required = true)
+            @RequestBody Map<String, Object> updates) {
+        logger.info("Requête pour mise à jour partielle du rôle avec ID: {}", id);
+        Optional<Role> roleOptional = roleService.findById(id);
+
+        if (roleOptional.isEmpty()) {
+            logger.warn("Rôle avec ID: {} non trouvé pour mise à jour partielle", id);
+            return ResponseEntity.notFound().build();
+        }
+
+        Role role = roleOptional.get();
+
+        updates.forEach((key, value) -> {
+            logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
+            switch (key) {
+                case "name":
+                    role.setName((String) value);
+                    break;
+            }
+        });
+
+        Role updatedRole = roleService.save(role);
+        logger.info("Mise à jour partielle réussie pour le rôle: {}", updatedRole.getName());
+        return ResponseEntity.ok(updatedRole);
     }
 
     @Operation(summary = "Supprimer un rôle par ID",
