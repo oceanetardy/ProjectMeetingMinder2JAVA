@@ -16,12 +16,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/roles")
 @Tag(name = "Gestion des rôles", description = "Opérations liées à la gestion des rôles dans l'API")
 public class RoleController {
+
+    private static final Logger logger = LoggerFactory.getLogger(RoleController.class);
 
     private final RoleService roleService;
 
@@ -40,8 +45,15 @@ public class RoleController {
     public ResponseEntity<Role> getRoleById(
             @Parameter(description = "Identifiant unique du rôle recherché", example = "1")
             @PathVariable Long id) {
+        logger.info("Requête pour obtenir le rôle avec ID: {}", id);
         Optional<Role> role = roleService.findById(id);
-        return role.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        if (role.isPresent()) {
+            logger.info("Rôle trouvé: {}", role.get().getName());
+            return ResponseEntity.ok(role.get());
+        } else {
+            logger.warn("Rôle avec ID: {} non trouvé", id);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Obtenir tous les rôles avec pagination",
@@ -53,6 +65,7 @@ public class RoleController {
     @GetMapping
     public Page<Role> getAllRoles(
             @Parameter(description = "Paramètres de pagination") Pageable pageable) {
+        logger.info("Requête pour obtenir tous les rôles avec pagination: {}", pageable);
         return roleService.findAll(pageable);
     }
 
@@ -67,8 +80,15 @@ public class RoleController {
     public ResponseEntity<Role> createRole(
             @Parameter(description = "Détails du rôle à créer", required = true)
             @Valid @RequestBody Role role) {
-        Role savedRole = roleService.save(role);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRole);
+        logger.info("Requête pour créer un nouveau rôle avec nom: {}", role.getName());
+        try {
+            Role savedRole = roleService.save(role);
+            logger.info("Rôle créé avec succès: {}", savedRole.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedRole);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la création du rôle: {}", role.getName(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @Operation(summary = "Mettre à jour un rôle par ID",
@@ -85,12 +105,16 @@ public class RoleController {
             @PathVariable Long id,
             @Parameter(description = "Nouvelles informations du rôle", required = true)
             @Valid @RequestBody Role roleDetails) {
+        logger.info("Requête pour mettre à jour le rôle avec ID: {}", id);
         Optional<Role> role = roleService.findById(id);
         if (role.isPresent()) {
             Role updatedRole = role.get();
             updatedRole.setName(roleDetails.getName());
-            return ResponseEntity.ok(roleService.save(updatedRole));
+            Role savedRole = roleService.save(updatedRole);
+            logger.info("Rôle mis à jour avec succès: {}", savedRole.getName());
+            return ResponseEntity.ok(savedRole);
         } else {
+            logger.warn("Rôle avec ID: {} non trouvé pour mise à jour", id);
             return ResponseEntity.notFound().build();
         }
     }
@@ -105,10 +129,13 @@ public class RoleController {
     public ResponseEntity<Void> deleteRoleById(
             @Parameter(description = "Identifiant unique du rôle à supprimer", example = "1")
             @PathVariable Long id) {
+        logger.info("Requête pour supprimer le rôle avec ID: {}", id);
         if (roleService.findById(id).isPresent()) {
             roleService.deleteById(id);
+            logger.info("Rôle avec ID: {} supprimé avec succès", id);
             return ResponseEntity.noContent().build();
         } else {
+            logger.warn("Rôle avec ID: {} non trouvé pour suppression", id);
             return ResponseEntity.notFound().build();
         }
     }
@@ -120,7 +147,9 @@ public class RoleController {
     })
     @DeleteMapping
     public ResponseEntity<Void> deleteAllRoles() {
+        logger.info("Requête pour supprimer tous les rôles");
         roleService.deleteAll();
+        logger.info("Tous les rôles ont été supprimés avec succès");
         return ResponseEntity.noContent().build();
     }
 }

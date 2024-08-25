@@ -18,19 +18,22 @@ public class Role {
     @Schema(description = "Nom unique du rôle", example = "Admin")
     private String name;
 
-    // Getters et Setters
+    // Getter pour l'identifiant du rôle
     public Long getId() {
         return id;
     }
 
+    // Setter pour l'identifiant du rôle
     public void setId(Long id) {
         this.id = id;
     }
 
+    // Getter pour le nom du rôle
     public String getName() {
         return name;
     }
 
+    // Setter pour le nom du rôle
     public void setName(String name) {
         this.name = name;
     }

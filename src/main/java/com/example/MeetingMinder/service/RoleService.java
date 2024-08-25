@@ -22,31 +22,38 @@ public class RoleService {
         this.roleRepository = roleRepository;
     }
 
-    public Page<Role> findAll(Pageable pageable) {
-        return roleRepository.findAll(pageable);
-    }
-
+    // Cherche un rôle par son ID
     public Optional<Role> findById(Long id) {
+        logger.info("Recherche du rôle avec ID: {}", id);
         return roleRepository.findById(id);
     }
 
+    // Récupère tous les rôles avec pagination
+    public Page<Role> findAll(Pageable pageable) {
+        logger.info("Obtention de tous les rôles avec pagination: {}", pageable);
+        return roleRepository.findAll(pageable);
+    }
+
+    // Sauvegarde un rôle dans la base de données
     public Role save(Role role) {
         try {
-            logger.info("Saving role: {}", role.getName());
+            logger.info("Sauvegarde du rôle: {}", role.getName());
             return roleRepository.save(role);
         } catch (DataIntegrityViolationException e) {
-            logger.error("Error while saving role: {}", role.getName(), e);
+            logger.error("Erreur lors de la sauvegarde du rôle: {}", role.getName(), e);
             throw new RuntimeException("Un rôle avec ce nom existe déjà.");
         }
     }
 
-    public void deleteAll() {
-        logger.info("Deleting all roles");
-        roleRepository.deleteAll();
+    // Supprime un rôle par son ID
+    public void deleteById(Long id) {
+        logger.info("Suppression du rôle avec ID: {}", id);
+        roleRepository.deleteById(id);
     }
 
-    public void deleteById(Long id) {
-        logger.info("Deleting role with ID: {}", id);
-        roleRepository.deleteById(id);
+    // Supprime tous les rôles
+    public void deleteAll() {
+        logger.info("Suppression de tous les rôles");
+        roleRepository.deleteAll();
     }
 }
