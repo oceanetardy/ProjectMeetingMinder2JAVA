@@ -75,7 +75,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Utilisateur créé avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom d'utilisateur existe déjà", content = @Content)
     })
     @PostMapping
     public ResponseEntity<User> createUser(
@@ -83,14 +84,19 @@ public class UserController {
             @Valid @RequestBody User user) {
         logger.info("Requête pour créer un nouvel utilisateur avec nom: {}", user.getName());
         try {
+            if (userService.existsByName(user.getName())) {  // Vérification de l'unicité du nom d'utilisateur
+                logger.warn("Le nom d'utilisateur '{}' existe déjà", user.getName());
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
             User createdUser = userService.save(user);
             logger.info("Utilisateur créé avec succès: {}", createdUser.getName());
-            return ResponseEntity.status(201).body(createdUser);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (Exception e) {
             logger.error("Erreur lors de la création de l'utilisateur: {}", user.getName(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
+
 
     @Operation(summary = "Mettre à jour un utilisateur par ID",
             description = "Met à jour un utilisateur existant avec les nouvelles informations fournies")
@@ -98,7 +104,8 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Utilisateur mis à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom d'utilisateur existe déjà", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
@@ -108,6 +115,10 @@ public class UserController {
         logger.info("Requête pour mettre à jour l'utilisateur avec ID: {}", id);
         Optional<User> user = userService.findById(id);
         if (user.isPresent()) {
+            if (userService.existsByName(userDetails.getName()) && !user.get().getName().equals(userDetails.getName())) {
+                logger.warn("Le nom d'utilisateur '{}' existe déjà", userDetails.getName());
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
             User updatedUser = user.get();
             updatedUser.setName(userDetails.getName());
             updatedUser.setPassword(userDetails.getPassword());
@@ -121,13 +132,15 @@ public class UserController {
         }
     }
 
+
     @Operation(summary = "Mettre à jour partiellement un utilisateur par ID",
             description = "Met à jour partiellement un utilisateur existant avec les informations fournies")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Utilisateur mis à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
             @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom d'utilisateur existe déjà", content = @Content)
     })
     @PatchMapping("/{id}")
     public ResponseEntity<User> partialUpdateUser(
@@ -148,7 +161,12 @@ public class UserController {
             logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
             switch (key) {
                 case "name":
-                    user.setName((String) value);
+                    String newName = (String) value;
+                    if (userService.existsByName(newName) && !user.getName().equals(newName)) {
+                        logger.warn("Le nom d'utilisateur '{}' existe déjà", newName);
+                        throw new RuntimeException("Le nom d'utilisateur existe déjà");
+                    }
+                    user.setName(newName);
                     break;
                 case "password":
                     user.setPassword((String) value);
@@ -179,6 +197,7 @@ public class UserController {
         logger.info("Mise à jour partielle réussie pour l'utilisateur: {}", updatedUser.getName());
         return ResponseEntity.ok(updatedUser);
     }
+
 
     @Operation(summary = "Supprimer un utilisateur par ID",
             description = "Supprime un utilisateur en fonction de son ID")

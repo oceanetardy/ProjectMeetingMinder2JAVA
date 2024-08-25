@@ -47,4 +47,8 @@ public class UserService {
         logger.info("Suppression de l'utilisateur avec ID: {}", id);
         userRepository.deleteById(id);
     }
+
+    public boolean existsByName(String name) {
+        return userRepository.existsByName(name);
+    }
 }
