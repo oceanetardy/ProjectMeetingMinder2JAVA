@@ -45,4 +45,8 @@ public class RoomService {
         logger.info("Suppression de la salle avec ID: {}", id);
         roomRepository.deleteById(id);
     }
+
+    public boolean existsByName(String name) {
+        return roomRepository.existsByName(name);
+    }
 }

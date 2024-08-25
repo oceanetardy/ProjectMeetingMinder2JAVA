@@ -1,7 +1,6 @@
 package com.example.MeetingMinder.controller;
 
 import com.example.MeetingMinder.model.Room;
-import com.example.MeetingMinder.model.User;
 import com.example.MeetingMinder.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -72,7 +71,8 @@ public class RoomController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Salle créée avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Room.class))),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom de la salle existe déjà", content = @Content)
     })
     @PostMapping
     public ResponseEntity<Room> createRoom(
@@ -80,9 +80,13 @@ public class RoomController {
             @Valid @RequestBody Room room) {
         logger.info("Requête pour créer une nouvelle salle: {}", room.getName());
         try {
+            if (roomService.existsByName(room.getName())) {  // Vérification de l'unicité du nom de la salle
+                logger.warn("Le nom de la salle '{}' existe déjà", room.getName());
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
             Room createdRoom = roomService.save(room);
             logger.info("Salle créée avec succès: {}", createdRoom.getName());
-            return ResponseEntity.status(201).body(createdRoom);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
         } catch (Exception e) {
             logger.error("Erreur lors de la création de la salle: {}", room.getName(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -95,7 +99,8 @@ public class RoomController {
             @ApiResponse(responseCode = "200", description = "Salle mise à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Room.class))),
             @ApiResponse(responseCode = "404", description = "Salle non trouvée", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom de la salle existe déjà", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<Room> updateRoom(
@@ -105,6 +110,10 @@ public class RoomController {
         logger.info("Requête pour mettre à jour la salle avec ID: {}", id);
         Optional<Room> room = roomService.findById(id);
         if (room.isPresent()) {
+            if (roomService.existsByName(roomDetails.getName()) && !room.get().getName().equals(roomDetails.getName())) {
+                logger.warn("Le nom de la salle '{}' existe déjà", roomDetails.getName());
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
             Room updatedRoom = room.get();
             updatedRoom.setName(roomDetails.getName());
             updatedRoom.setCapacity(roomDetails.getCapacity());
@@ -124,7 +133,8 @@ public class RoomController {
             @ApiResponse(responseCode = "200", description = "Salle mise à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Room.class))),
             @ApiResponse(responseCode = "404", description = "Salle non trouvée", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Données invalides fournies", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Le nom de la salle existe déjà", content = @Content)
     })
     @PatchMapping("/{id}")
     public ResponseEntity<Room> partialUpdateRoom(
@@ -134,12 +144,20 @@ public class RoomController {
         logger.info("Requête pour mise à jour partielle de la salle avec ID: {}", id);
         Optional<Room> roomOptional = roomService.findById(id);
 
-        if (!roomOptional.isPresent()) {
+        if (roomOptional.isEmpty()) {
             logger.warn("Salle avec ID: {} non trouvée pour mise à jour partielle", id);
             return ResponseEntity.notFound().build();
         }
 
         Room room = roomOptional.get();
+
+        if (updates.containsKey("name")) {
+            String newName = (String) updates.get("name");
+            if (roomService.existsByName(newName) && !room.getName().equals(newName)) {
+                logger.warn("Le nom de la salle '{}' existe déjà", newName);
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+        }
 
         updates.forEach((key, value) -> {
             logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
@@ -160,6 +178,7 @@ public class RoomController {
         logger.info("Mise à jour partielle réussie pour la salle: {}", updatedRoom.getName());
         return ResponseEntity.ok(updatedRoom);
     }
+
 
     @Operation(summary = "Supprimer une salle par ID",
             description = "Supprime une salle en fonction de son ID")
