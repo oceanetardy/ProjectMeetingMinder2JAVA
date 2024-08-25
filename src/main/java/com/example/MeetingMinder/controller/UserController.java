@@ -39,7 +39,8 @@ public class UserController {
         this.roleService = roleService;
     }
 
-    @Operation(summary = "Obtenir tous les utilisateurs", description = "Retourne une liste paginée de tous les utilisateurs")
+    @Operation(summary = "Obtenir tous les utilisateurs",
+            description = "Retourne une liste paginée de tous les utilisateurs")
     @ApiResponse(responseCode = "200", description = "Liste des utilisateurs récupérée avec succès",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
     @GetMapping
@@ -48,7 +49,8 @@ public class UserController {
         return userService.findAll(pageable);
     }
 
-    @Operation(summary = "Obtenir un utilisateur par ID", description = "Retourne un utilisateur en fonction de son ID")
+    @Operation(summary = "Obtenir un utilisateur par ID",
+            description = "Retourne un utilisateur en fonction de son ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Utilisateur trouvé",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
@@ -68,7 +70,8 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Créer un nouvel utilisateur", description = "Crée un nouvel utilisateur et retourne l'utilisateur créé")
+    @Operation(summary = "Créer un nouvel utilisateur",
+            description = "Crée un nouvel utilisateur et retourne l'utilisateur créé")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Utilisateur créé avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
@@ -89,7 +92,8 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Mettre à jour un utilisateur par ID", description = "Met à jour un utilisateur existant avec les nouvelles informations fournies")
+    @Operation(summary = "Mettre à jour un utilisateur par ID",
+            description = "Met à jour un utilisateur existant avec les nouvelles informations fournies")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Utilisateur mis à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
@@ -117,7 +121,8 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Mettre à jour partiellement un utilisateur par ID", description = "Met à jour partiellement un utilisateur existant avec les informations fournies")
+    @Operation(summary = "Mettre à jour partiellement un utilisateur par ID",
+            description = "Met à jour partiellement un utilisateur existant avec les informations fournies")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Utilisateur mis à jour avec succès",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
@@ -175,7 +180,8 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @Operation(summary = "Supprimer un utilisateur par ID", description = "Supprime un utilisateur en fonction de son ID")
+    @Operation(summary = "Supprimer un utilisateur par ID",
+            description = "Supprime un utilisateur en fonction de son ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Utilisateur supprimé avec succès", content = @Content),
             @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé", content = @Content)
@@ -194,7 +200,8 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Supprimer tous les utilisateurs", description = "Supprime tous les utilisateurs existants dans le système")
+    @Operation(summary = "Supprimer tous les utilisateurs",
+            description = "Supprime tous les utilisateurs existants dans le système")
     @ApiResponse(responseCode = "204", description = "Tous les utilisateurs ont été supprimés avec succès", content = @Content)
     @DeleteMapping
     public ResponseEntity<Void> deleteAllUsers() {
