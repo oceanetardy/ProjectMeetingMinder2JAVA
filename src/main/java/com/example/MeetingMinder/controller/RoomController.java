@@ -84,7 +84,7 @@ public class RoomController {
             logger.info("Salle créée avec succès: {}", createdRoom.getName());
             return ResponseEntity.status(201).body(createdRoom);
         } catch (Exception e) {
-            logger.error("Erreur lors de la création de la salle : {}", room.getName(), e);
+            logger.error("Erreur lors de la création de la salle: {}", room.getName(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
