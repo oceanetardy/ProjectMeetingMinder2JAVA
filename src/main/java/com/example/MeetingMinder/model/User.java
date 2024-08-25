@@ -1,5 +1,6 @@
 package com.example.MeetingMinder.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,10 +10,12 @@ import jakarta.validation.constraints.Size;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identifiant unique de l'utilisateur ", example = "1")
     private Long id;
 
     @NotBlank(message = "Le nom d'utilisateur est obligatoire")
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
+    @Schema(description = "Nom unique de l'utilisateur", example = "Andrey")
     private String name;
 
     @NotBlank(message = "Le mot de passe est obligatoire")
