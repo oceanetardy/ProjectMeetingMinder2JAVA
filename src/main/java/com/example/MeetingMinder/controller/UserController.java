@@ -96,8 +96,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
-
-
+    
     @Operation(summary = "Mettre à jour un utilisateur par ID",
             description = "Met à jour un utilisateur existant avec les nouvelles informations fournies")
     @ApiResponses(value = {
@@ -132,7 +131,6 @@ public class UserController {
         }
     }
 
-
     @Operation(summary = "Mettre à jour partiellement un utilisateur par ID",
             description = "Met à jour partiellement un utilisateur existant avec les informations fournies")
     @ApiResponses(value = {
@@ -157,16 +155,19 @@ public class UserController {
 
         User user = userOptional.get();
 
+        if (updates.containsKey("name")) {
+            String newName = (String) updates.get("name");
+            if (userService.existsByName(newName) && !user.getName().equals(newName)) {
+                logger.warn("Le nom d'utilisateur '{}' existe déjà", newName);
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+        }
+
         updates.forEach((key, value) -> {
             logger.info("Mise à jour du champ: {} avec la valeur: {}", key, value);
             switch (key) {
                 case "name":
-                    String newName = (String) value;
-                    if (userService.existsByName(newName) && !user.getName().equals(newName)) {
-                        logger.warn("Le nom d'utilisateur '{}' existe déjà", newName);
-                        throw new RuntimeException("Le nom d'utilisateur existe déjà");
-                    }
-                    user.setName(newName);
+                    user.setName((String) value);
                     break;
                 case "password":
                     user.setPassword((String) value);
@@ -197,7 +198,6 @@ public class UserController {
         logger.info("Mise à jour partielle réussie pour l'utilisateur: {}", updatedUser.getName());
         return ResponseEntity.ok(updatedUser);
     }
-
 
     @Operation(summary = "Supprimer un utilisateur par ID",
             description = "Supprime un utilisateur en fonction de son ID")
