@@ -2,6 +2,7 @@
 
 API pour la gestion des salles de réunion et des réservations
 
+Doc Swagger :  http://localhost:8080/meeting-minder/swagger-ui/index.html 
 
 http://localhost:8080/meeting-minder 
 
